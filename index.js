@@ -94,7 +94,8 @@ function nameForHandle(handle) {
 // Sends a message to the given handle
 function send(handle, message) {
     assert(typeof handle == 'string', 'handle must be a string')
-    assert(typeof message == 'string', 'message must be a string')
+    assert(message != null, 'must supply a message of the form {message?: string, filePath?: string}')
+    assert(!(message.message && message.filePath), 'can only supply one of "message" or "filePath"')
     return osa((handle, message) => {
         const Messages = Application('Messages')
 
@@ -108,8 +109,9 @@ function send(handle, message) {
             target = Messages.textChats.byId('iMessage;+;' + handle)()
         } catch (e) {}
 
+        const toSend = message.message || Path(message.filePath)
         try {
-            Messages.send(message, { to: target })
+            Messages.send(toSend, { to: target })
         } catch (e) {
             throw new Error(`no thread with handle '${handle}'`)
         }
